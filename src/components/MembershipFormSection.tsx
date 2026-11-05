@@ -37,8 +37,8 @@ export default function MembershipFormSection({ onApplicationSubmitted }: Member
   const [birthday, setBirthday] = useState('1990-01-01');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [city, setCity] = useState('台北市');
-  const [district, setDistrict] = useState('大安區');
+  const [city, setCity] = useState('香港島');
+  const [district, setDistrict] = useState('中西區');
   const [familyStructure, setFamilyStructure] = useState('育兒小家庭 (2大1小)');
   const [familyCount, setFamilyCount] = useState(3);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([
@@ -46,7 +46,7 @@ export default function MembershipFormSection({ onApplicationSubmitted }: Member
     '家庭記帳',
     '指數投資'
   ]);
-  const [contactPreference, setContactPreference] = useState('LINE 官方社群與電子專刊');
+  const [contactPreference, setContactPreference] = useState('WhatsApp 專屬社群與訊息通知');
   const [referralSource, setReferralSource] = useState('親友口碑推薦');
   const [statement, setStatement] = useState('');
   const [agreeTerms, setAgreeTerms] = useState(true);
@@ -66,11 +66,12 @@ export default function MembershipFormSection({ onApplicationSubmitted }: Member
     '家庭信託'
   ];
 
-  const cities = [
-    '台北市', '新北市', '桃園市', '台中市', '台南市', '高雄市', 
-    '基隆市', '新竹市', '新竹縣', '苗栗縣', '彰化縣', '南投縣', 
-    '雲林縣', '嘉義市', '嘉義縣', '屏東縣', '宜蘭縣', '花蓮縣', '台東縣', '澎湖縣'
-  ];
+  const hkRegions: Record<string, string[]> = {
+    '香港島': ['中西區', '灣仔區', '東區', '南區'],
+    '九龍': ['油尖旺區', '深水埗區', '九龍城區', '黃大仙區', '觀塘區'],
+    '新界': ['沙田區', '大埔區', '北區', '元朗區', '屯田區', '荃灣區', '葵青區', '西貢區'],
+    '離島': ['離島區 (東涌/大嶼山/長洲/南丫島等)']
+  };
 
   const toggleInterest = (interest: string) => {
     setSelectedInterests(prev => 
@@ -127,11 +128,12 @@ export default function MembershipFormSection({ onApplicationSubmitted }: Member
       newErrors.familyName = '請填寫家庭理財暱稱（例如：向日葵存錢家）';
     }
 
-    const phoneRegex = /^09\d{2}-?\d{3}-?\d{3}$/;
+    const cleanPhone = phone.replace(/[\s()-+]/g, '');
+    const isHKPhone = /^(852)?[4-9]\d{7}$/.test(cleanPhone) || (cleanPhone.length === 8 && /^\d+$/.test(cleanPhone));
     if (!phone.trim()) {
-      newErrors.phone = '請輸入聯絡手機號碼';
-    } else if (!phoneRegex.test(phone.replace(/\s+/g, ''))) {
-      newErrors.phone = '請輸入正確的台灣手機格式 (例如: 0912-345-678)';
+      newErrors.phone = '請輸入香港聯絡電話 (可填寫 WhatsApp 手機)';
+    } else if (!isHKPhone) {
+      newErrors.phone = '請輸入正確的香港 8 位手機格式 (例如: 9123-4567 或 61234567)';
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -414,19 +416,19 @@ export default function MembershipFormSection({ onApplicationSubmitted }: Member
                   {/* Mobile Phone */}
                   <div>
                     <label htmlFor="field-phone" className="block text-xs font-bold text-slate-700 mb-1">
-                      聯絡手機 (會員身分驗證號) <span className="text-orange-500">*</span>
+                      聯絡電話 (香港手機 / WhatsApp) <span className="text-orange-500">*</span>
                     </label>
                     <div className="relative">
-                      <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                      <Phone className="w-4 h-4 text-emerald-600 absolute left-3.5 top-3" />
                       <input
                         id="field-phone"
                         type="tel"
-                        placeholder="0912-345-678"
+                        placeholder="例如：9123-4567 或 61234567"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         className={`w-full pl-10 pr-3.5 py-2.5 rounded-xl border ${
-                          errors.phone ? 'border-rose-400 bg-rose-50/50' : 'border-slate-300 focus:border-amber-500'
-                        } text-sm focus:outline-none focus:ring-2 focus:ring-amber-200 transition-all`}
+                          errors.phone ? 'border-rose-400 bg-rose-50/50' : 'border-slate-300 focus:border-emerald-500'
+                        } text-sm focus:outline-none focus:ring-2 focus:ring-emerald-200 transition-all`}
                       />
                     </div>
                     {errors.phone && (
@@ -457,33 +459,42 @@ export default function MembershipFormSection({ onApplicationSubmitted }: Member
                     )}
                   </div>
 
-                  {/* City & District */}
+                  {/* Hong Kong Region & District */}
                   <div className="sm:col-span-2 grid grid-cols-2 gap-3">
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1">
-                        居住縣市 (實體沙龍在地服務)
+                        居住地區（香港） <span className="text-orange-500">*</span>
                       </label>
                       <select
                         value={city}
-                        onChange={(e) => setCity(e.target.value)}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-amber-200 bg-white"
+                        onChange={(e) => {
+                          const newRegion = e.target.value;
+                          setCity(newRegion);
+                          const districtList = hkRegions[newRegion];
+                          if (districtList && districtList.length > 0) {
+                            setDistrict(districtList[0]);
+                          }
+                        }}
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-amber-200 bg-white font-medium"
                       >
-                        {cities.map((c) => (
-                          <option key={c} value={c}>{c}</option>
+                        {Object.keys(hkRegions).map((region) => (
+                          <option key={region} value={region}>{region}</option>
                         ))}
                       </select>
                     </div>
                     <div>
                       <label className="block text-xs font-bold text-slate-700 mb-1">
-                        鄉鎮市區
+                        行政分區
                       </label>
-                      <input
-                        type="text"
-                        placeholder="例如：大安區、板橋區"
+                      <select
                         value={district}
                         onChange={(e) => setDistrict(e.target.value)}
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-amber-200 bg-white"
-                      />
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-amber-200 bg-white font-medium"
+                      >
+                        {(hkRegions[city] || []).map((d) => (
+                          <option key={d} value={d}>{d}</option>
+                        ))}
+                      </select>
                     </div>
                   </div>
                 </div>
@@ -576,17 +587,21 @@ export default function MembershipFormSection({ onApplicationSubmitted }: Member
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                   <div>
-                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                      偏好會員服務接收方式
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5 flex items-center justify-between">
+                      <span>偏好會員服務接收方式</span>
+                      <span className="text-[11px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        ✓ 推薦 WhatsApp
+                      </span>
                     </label>
                     <select
                       value={contactPreference}
                       onChange={(e) => setContactPreference(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-amber-200 bg-white"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-emerald-400 bg-emerald-50/30 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-200"
                     >
-                      <option value="LINE 官方社群與電子專刊">📱 LINE 官方社群與電子專刊</option>
+                      <option value="WhatsApp 專屬社群與訊息通知">💬 WhatsApp 專屬社群與訊息通知 (預設)</option>
                       <option value="電子信箱 Email 深度研報">📧 電子信箱 Email 深度研報</option>
-                      <option value="實體沙龍與紙本教材掛號">📮 實體沙龍與紙本教材掛號</option>
+                      <option value="電話或短信 SMS 專人聯繫">📞 電話或短信 SMS 專人聯繫</option>
+                      <option value="紙本教材與歡迎禮盒郵寄">📮 紙本教材與歡迎禮盒郵寄</option>
                     </select>
                   </div>
 

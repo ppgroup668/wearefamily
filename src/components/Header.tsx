@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { Coins, Menu, X, Sparkles, UserPlus } from 'lucide-react';
+import { Coins, Menu, X, Sparkles, UserPlus, Lock } from 'lucide-react';
 
 interface HeaderProps {
   onScrollToForm: () => void;
+  onOpenAdminLogin: () => void;
 }
 
-export default function Header({ onScrollToForm }: HeaderProps) {
+export default function Header({ onScrollToForm, onOpenAdminLogin }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleNavClick = (anchorId: string) => {
@@ -18,19 +19,31 @@ export default function Header({ onScrollToForm }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-amber-200/60 shadow-xs transition-all">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-8">
-        {/* Zone 1: Brand wordmark (single text element wordmark) */}
-        <a 
-          href="#" 
-          className="flex items-center gap-2.5 text-xl font-bold tracking-tight text-amber-900 whitespace-nowrap shrink-0 group hover:opacity-95 transition-opacity"
-        >
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-400 via-orange-400 to-emerald-400 flex items-center justify-center text-white shadow-sm shadow-amber-300/50 group-hover:scale-105 transition-transform">
-            <Coins className="w-5 h-5 text-amber-950" />
-          </div>
-          <span className="text-xl font-extrabold bg-gradient-to-r from-amber-700 via-orange-600 to-emerald-700 bg-clip-text text-transparent">
-            理財這一家
-          </span>
-        </a>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between gap-6 sm:gap-8">
+        {/* Zone 1: Top Left - Admin Data Viewer Button & Brand Wordmark */}
+        <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+          {/* Top Left Admin Login Button requested by user */}
+          <button
+            onClick={onOpenAdminLogin}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-amber-950 bg-amber-100 hover:bg-amber-200 border border-amber-300 rounded-xl transition-all cursor-pointer shadow-2xs hover:scale-102 shrink-0"
+            title="管理員登入查看報名會員資料（密碼驗證）"
+          >
+            <Lock className="w-3.5 h-3.5 text-amber-700" />
+            <span className="whitespace-nowrap">報名會員資料查看</span>
+          </button>
+
+          <a 
+            href="#" 
+            className="flex items-center gap-2 text-xl font-bold tracking-tight text-amber-900 whitespace-nowrap shrink-0 group hover:opacity-95 transition-opacity"
+          >
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 via-orange-400 to-emerald-400 flex items-center justify-center text-white shadow-sm shadow-amber-300/50 group-hover:scale-105 transition-transform">
+              <Coins className="w-5 h-5 text-amber-950" />
+            </div>
+            <span className="text-xl font-extrabold bg-gradient-to-r from-amber-700 via-orange-600 to-emerald-700 bg-clip-text text-transparent">
+              理財這一家
+            </span>
+          </a>
+        </div>
 
         {/* Zone 2: 4-5 concise single-line text links */}
         <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-700">
@@ -120,13 +133,23 @@ export default function Header({ onScrollToForm }: HeaderProps) {
           >
             入會問答
           </button>
-          <div className="pt-2">
+          <div className="pt-2 space-y-2">
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onOpenAdminLogin();
+              }}
+              className="w-full flex items-center justify-center gap-2 py-2.5 text-xs font-bold text-amber-950 bg-amber-100 hover:bg-amber-200 border border-amber-300 rounded-xl transition-colors cursor-pointer"
+            >
+              <Lock className="w-3.5 h-3.5 text-amber-700" />
+              <span>報名會員資料查看（管理登入）</span>
+            </button>
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
                 onScrollToForm();
               }}
-              className="w-full flex items-center justify-center gap-2 py-3 text-sm font-bold text-white bg-gradient-to-r from-amber-500 via-orange-500 to-emerald-600 rounded-xl shadow-md"
+              className="w-full flex items-center justify-center gap-2 py-3 text-sm font-bold text-white bg-gradient-to-r from-amber-500 via-orange-500 to-emerald-600 rounded-xl shadow-md cursor-pointer"
             >
               <UserPlus className="w-4 h-4" />
               <span>線上填表入會</span>

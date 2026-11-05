@@ -13,6 +13,8 @@ import FamilyWallSection from './components/FamilyWallSection';
 import FAQSection from './components/FAQSection';
 import Footer from './components/Footer';
 import SuccessModal from './components/SuccessModal';
+import AdminLoginModal from './components/AdminLoginModal';
+import MemberDataViewerModal from './components/MemberDataViewerModal';
 import { MEMBERSHIP_BENEFITS, INITIAL_MEMBERS } from './data/initialData';
 import { MemberApplication } from './types';
 
@@ -31,6 +33,17 @@ export default function App() {
 
   const [latestMember, setLatestMember] = useState<MemberApplication | null>(null);
 
+  // Admin authentication and data viewer state
+  const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
+  const [isAdminDataViewerOpen, setIsAdminDataViewerOpen] = useState(false);
+  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(() => {
+    try {
+      return sessionStorage.getItem('admin_wealth_auth') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
   // Sync to localStorage
   useEffect(() => {
     try {
@@ -39,6 +52,35 @@ export default function App() {
       // storage unavailable
     }
   }, [members]);
+
+  const handleOpenAdminLogin = () => {
+    if (isAdminAuthenticated) {
+      setIsAdminDataViewerOpen(true);
+    } else {
+      setIsAdminLoginOpen(true);
+    }
+  };
+
+  const handleAdminLoginSuccess = () => {
+    setIsAdminAuthenticated(true);
+    try {
+      sessionStorage.setItem('admin_wealth_auth', 'true');
+    } catch {
+      // ignore
+    }
+    setIsAdminLoginOpen(false);
+    setIsAdminDataViewerOpen(true);
+  };
+
+  const handleAdminLogout = () => {
+    setIsAdminAuthenticated(false);
+    try {
+      sessionStorage.removeItem('admin_wealth_auth');
+    } catch {
+      // ignore
+    }
+    setIsAdminDataViewerOpen(false);
+  };
 
   const handleScrollToForm = () => {
     const formElement = document.getElementById('membership-form-section');
@@ -84,8 +126,11 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#FFFDF9] text-slate-900 flex flex-col selection:bg-amber-300 selection:text-amber-950">
-      {/* Top Header */}
-      <Header onScrollToForm={handleScrollToForm} />
+      {/* Top Header with top-left Admin Data button */}
+      <Header 
+        onScrollToForm={handleScrollToForm} 
+        onOpenAdminLogin={handleOpenAdminLogin}
+      />
 
       <main className="flex-1">
         {/* Hero Section */}
@@ -94,7 +139,7 @@ export default function App() {
           onScrollToBenefits={handleScrollToBenefits}
         />
 
-        {/* Exclusive Membership Benefits (Replacing activities) */}
+        {/* Exclusive Membership Benefits */}
         <MembershipBenefitsSection
           benefits={MEMBERSHIP_BENEFITS}
           onScrollToForm={handleScrollToForm}
@@ -130,6 +175,25 @@ export default function App() {
           onGoToWall={handleGoToWallFromModal}
         />
       )}
+
+      {/* Admin Login Modal with Password Verification 668668 */}
+      <AdminLoginModal
+        isOpen={isAdminLoginOpen}
+        onClose={() => setIsAdminLoginOpen(false)}
+        onLoginSuccess={handleAdminLoginSuccess}
+      />
+
+      {/* Member Data Management Viewer Dashboard */}
+      <MemberDataViewerModal
+        isOpen={isAdminDataViewerOpen}
+        members={members}
+        onClose={() => setIsAdminDataViewerOpen(false)}
+        onLogout={handleAdminLogout}
+        onViewMemberCard={(m) => {
+          setIsAdminDataViewerOpen(false);
+          setLatestMember(m);
+        }}
+      />
     </div>
   );
 }
