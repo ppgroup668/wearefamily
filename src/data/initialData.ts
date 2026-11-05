@@ -32,7 +32,7 @@ export const MEMBERSHIP_BENEFITS: MembershipBenefit[] = [
     id: 'benefit-community',
     iconName: 'Users',
     title: 'WhatsApp 會員專屬社群與交流圈',
-    description: '加入「理財這一家」WhatsApp 專屬交流圈，隨時接收理財專刊、最新活動與志工即時解答。',
+    description: '加入「理財這一家」WhatsApp 專屬交流圈，隨時接收理財專刊、財商新知與志工即時解答。',
     highlight: 'WhatsApp 即時互助解答',
     badge: '會員圈子',
     themeColor: 'sky'

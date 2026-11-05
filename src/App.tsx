@@ -117,6 +117,20 @@ export default function App() {
     );
   };
 
+  const handleUpdateMember = (updatedMember: MemberApplication) => {
+    setMembers((prev) => prev.map((m) => (m.id === updatedMember.id ? updatedMember : m)));
+    if (latestMember && latestMember.id === updatedMember.id) {
+      setLatestMember(updatedMember);
+    }
+  };
+
+  const handleDeleteMember = (memberId: string) => {
+    setMembers((prev) => prev.filter((m) => m.id !== memberId));
+    if (latestMember && latestMember.id === memberId) {
+      setLatestMember(null);
+    }
+  };
+
   const handleGoToWallFromModal = () => {
     const wallEl = document.getElementById('community-wall-section');
     if (wallEl) {
@@ -183,7 +197,7 @@ export default function App() {
         onLoginSuccess={handleAdminLoginSuccess}
       />
 
-      {/* Member Data Management Viewer Dashboard */}
+      {/* Member Data Management Viewer Dashboard with Edit & Delete */}
       <MemberDataViewerModal
         isOpen={isAdminDataViewerOpen}
         members={members}
@@ -193,6 +207,8 @@ export default function App() {
           setIsAdminDataViewerOpen(false);
           setLatestMember(m);
         }}
+        onUpdateMember={handleUpdateMember}
+        onDeleteMember={handleDeleteMember}
       />
     </div>
   );

@@ -69,7 +69,7 @@ export default function MembershipFormSection({ onApplicationSubmitted }: Member
   const hkRegions: Record<string, string[]> = {
     '香港島': ['中西區', '灣仔區', '東區', '南區'],
     '九龍': ['油尖旺區', '深水埗區', '九龍城區', '黃大仙區', '觀塘區'],
-    '新界': ['沙田區', '大埔區', '北區', '元朗區', '屯田區', '荃灣區', '葵青區', '西貢區'],
+    '新界': ['沙田區', '大埔區', '北區', '元朗區', '屯門區', '荃灣區', '葵青區', '西貢區'],
     '離島': ['離島區 (東涌/大嶼山/長洲/南丫島等)']
   };
 
@@ -86,16 +86,16 @@ export default function MembershipFormSection({ onApplicationSubmitted }: Member
       case 'free':
         return {
           name: '陽光之友 · 普惠會員',
-          price: 'NT$ 0 / 永久免費',
+          price: 'HK$ 0 / 費用全免',
           color: 'from-amber-400 to-orange-400',
           badgeBg: 'bg-amber-100 text-amber-900 border-amber-300',
           desc: '適合想要初步建立家庭記帳與財商觀念的小資與單身夥伴',
-          perks: ['全套 631 記帳自動化試算表', '家庭理財電子月刊', '會員專屬社群交流']
+          perks: ['全套 631 記帳自動化試算表', '家庭理財電子月刊', '會員專屬 WhatsApp 社群交流']
         };
       case 'family':
         return {
           name: '幸福家庭 · 認證會員',
-          price: 'NT$ 0 / 公益推廣專案',
+          price: 'HK$ 0 / 費用全免',
           color: 'from-amber-500 via-orange-500 to-emerald-500',
           badgeBg: 'bg-emerald-100 text-emerald-900 border-emerald-300',
           desc: '熱門首選！適合正在買房、養育子女的核心家庭，享有全面輔導',
@@ -104,7 +104,7 @@ export default function MembershipFormSection({ onApplicationSubmitted }: Member
       case 'legacy':
         return {
           name: '世代傳承 · 守護會員',
-          price: 'NT$ 0 / 敬老與傳承專案',
+          price: 'HK$ 0 / 費用全免',
           color: 'from-emerald-500 to-teal-600',
           badgeBg: 'bg-teal-100 text-teal-900 border-teal-300',
           desc: '適合 45 歲以上中壯年、退休長輩及三代同堂家族資產守護',

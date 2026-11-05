@@ -14,9 +14,14 @@ import {
   Sparkles,
   ShieldCheck,
   CheckCircle2,
-  Filter
+  Filter,
+  Pencil,
+  Trash2,
+  Save,
+  AlertTriangle,
+  Eye
 } from 'lucide-react';
-import { MemberApplication } from '../types';
+import { MemberApplication, MembershipTier } from '../types';
 
 interface MemberDataViewerModalProps {
   isOpen: boolean;
@@ -24,20 +29,47 @@ interface MemberDataViewerModalProps {
   onClose: () => void;
   onLogout: () => void;
   onViewMemberCard: (member: MemberApplication) => void;
+  onUpdateMember: (updatedMember: MemberApplication) => void;
+  onDeleteMember: (memberId: string) => void;
 }
+
+const hkRegions: Record<string, string[]> = {
+  '香港島': ['中西區', '灣仔區', '東區', '南區'],
+  '九龍': ['油尖旺區', '深水埗區', '九龍城區', '黃大仙區', '觀塘區'],
+  '新界': ['沙田區', '大埔區', '北區', '元朗區', '屯門區', '荃灣區', '葵青區', '西貢區'],
+  '離島': ['離島區 (東涌/大嶼山/長洲/南丫島等)']
+};
 
 export default function MemberDataViewerModal({
   isOpen,
   members,
   onClose,
   onLogout,
-  onViewMemberCard
+  onViewMemberCard,
+  onUpdateMember,
+  onDeleteMember
 }: MemberDataViewerModalProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTier, setSelectedTier] = useState<string>('all');
   const [selectedRegion, setSelectedRegion] = useState<string>('all');
 
+  // Edit State
+  const [editingMember, setEditingMember] = useState<MemberApplication | null>(null);
+  const [editFormData, setEditFormData] = useState<Partial<MemberApplication>>({});
+  const [editError, setEditError] = useState('');
+
+  // Delete State
+  const [deletingMember, setDeletingMember] = useState<MemberApplication | null>(null);
+
+  // Success toast message
+  const [toastMessage, setToastMessage] = useState('');
+
   if (!isOpen) return null;
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(''), 3000);
+  };
 
   const filteredMembers = members.filter((m) => {
     const matchesSearch =
@@ -56,6 +88,69 @@ export default function MemberDataViewerModal({
 
     return matchesSearch && matchesTier && matchesRegion;
   });
+
+  const handleStartEdit = (member: MemberApplication) => {
+    setEditingMember(member);
+    setEditFormData({
+      ...member,
+      interests: [...member.interests]
+    });
+    setEditError('');
+  };
+
+  const handleSaveEdit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingMember) return;
+
+    if (!editFormData.applicantName?.trim()) {
+      setEditError('請輸入申請人姓名');
+      return;
+    }
+    if (!editFormData.familyName?.trim()) {
+      setEditError('請輸入家庭堂號/暱稱');
+      return;
+    }
+    if (!editFormData.phone?.trim()) {
+      setEditError('請輸入香港聯絡電話');
+      return;
+    }
+
+    const updated: MemberApplication = {
+      ...editingMember,
+      applicantName: editFormData.applicantName.trim(),
+      familyName: editFormData.familyName.trim(),
+      gender: editFormData.gender || editingMember.gender,
+      birthday: editFormData.birthday || editingMember.birthday,
+      phone: editFormData.phone.trim(),
+      email: editFormData.email?.trim() || editingMember.email,
+      city: editFormData.city || editingMember.city,
+      district: editFormData.district || editingMember.district,
+      familyStructure: editFormData.familyStructure || editingMember.familyStructure,
+      familyCount: Number(editFormData.familyCount) || editingMember.familyCount,
+      tier: (editFormData.tier as MembershipTier) || editingMember.tier,
+      tierName:
+        editFormData.tier === 'free'
+          ? '陽光之友 · 普惠會員'
+          : editFormData.tier === 'legacy'
+          ? '世代傳承 · 守護會員'
+          : '幸福家庭 · 認證會員',
+      contactPreference: editFormData.contactPreference || editingMember.contactPreference,
+      statement: editFormData.statement?.trim() || editingMember.statement
+    };
+
+    onUpdateMember(updated);
+    setEditingMember(null);
+    showToast(`已成功儲存會員 ${updated.applicantName} (${updated.id}) 的變更！`);
+  };
+
+  const handleConfirmDelete = () => {
+    if (!deletingMember) return;
+    const id = deletingMember.id;
+    const name = deletingMember.applicantName;
+    onDeleteMember(id);
+    setDeletingMember(null);
+    showToast(`已刪除會員 ${name} (${id}) 的報名資料！`);
+  };
 
   const handleExportCSV = () => {
     const headers = [
@@ -101,7 +196,7 @@ export default function MemberDataViewerModal({
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `理財這一家_會員報名名冊_${new Date().toISOString().slice(0, 10)}.csv`);
+    link.setAttribute('download', `理財這一家_香港會員名冊_${new Date().toISOString().slice(0, 10)}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -113,7 +208,7 @@ export default function MemberDataViewerModal({
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200">
-      <div className="relative bg-[#FFFDF9] rounded-3xl max-w-6xl w-full border border-amber-300 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
+      <div className="relative bg-[#FFFDF9] rounded-3xl max-w-7xl w-full border border-amber-300 shadow-2xl flex flex-col max-h-[92vh] overflow-hidden">
         
         {/* Top Header Bar */}
         <div className="p-5 sm:p-6 bg-white border-b border-amber-200 flex flex-wrap items-center justify-between gap-4">
@@ -131,7 +226,7 @@ export default function MemberDataViewerModal({
                 </span>
               </div>
               <p className="text-xs text-slate-500">
-                可即時檢視所有已提交之香港會員申請名冊、篩選匯出與列印
+                可即時檢視所有已提交之香港會員申請名冊、執行編輯、刪除、篩選匯出與列印
               </p>
             </div>
           </div>
@@ -166,13 +261,21 @@ export default function MemberDataViewerModal({
 
             <button
               onClick={onClose}
-              className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors ml-1"
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors ml-1 cursor-pointer"
               aria-label="關閉"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
         </div>
+
+        {/* Toast feedback */}
+        {toastMessage && (
+          <div className="bg-emerald-500 text-white text-xs font-bold py-2.5 px-6 text-center animate-in slide-in-from-top flex items-center justify-center gap-2">
+            <CheckCircle2 className="w-4 h-4" />
+            <span>{toastMessage}</span>
+          </div>
+        )}
 
         {/* Content Body */}
         <div className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-6">
@@ -199,8 +302,8 @@ export default function MemberDataViewerModal({
             </div>
 
             <div className="bg-white p-4 rounded-2xl border border-purple-200 shadow-2xs">
-              <div className="text-xs text-purple-700 font-medium">香港在地會員佔比</div>
-              <div className="text-2xl font-black text-purple-700 tabular-nums mt-1">100%</div>
+              <div className="text-xs text-purple-700 font-medium">入會手續費</div>
+              <div className="text-xl sm:text-2xl font-black text-emerald-600 tracking-tight mt-1">費用全免 (HK$ 0)</div>
             </div>
           </div>
 
@@ -270,7 +373,7 @@ export default function MemberDataViewerModal({
                     <th className="py-3 px-4 whitespace-nowrap">關注理財面向</th>
                     <th className="py-3 px-4 whitespace-nowrap">服務接收方式</th>
                     <th className="py-3 px-4 whitespace-nowrap">登記時間</th>
-                    <th className="py-3 px-4 text-center whitespace-nowrap">操作</th>
+                    <th className="py-3 px-4 text-center whitespace-nowrap">操作管理</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -325,13 +428,37 @@ export default function MemberDataViewerModal({
                       <td className="py-3 px-4 text-slate-500 whitespace-nowrap">
                         {m.appliedAt}
                       </td>
-                      <td className="py-3 px-4 text-center whitespace-nowrap">
-                        <button
-                          onClick={() => onViewMemberCard(m)}
-                          className="px-2.5 py-1 text-[11px] font-bold text-amber-900 bg-amber-100 hover:bg-amber-200 rounded-lg transition-colors cursor-pointer"
-                        >
-                          查看會員卡
-                        </button>
+                      <td className="py-3 px-4 whitespace-nowrap text-center">
+                        <div className="flex items-center justify-center gap-1.5">
+                          {/* View card */}
+                          <button
+                            onClick={() => onViewMemberCard(m)}
+                            className="p-1.5 rounded-lg text-slate-600 hover:text-amber-800 hover:bg-amber-100 transition-colors cursor-pointer"
+                            title="查看數位會員卡"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+
+                          {/* Edit button */}
+                          <button
+                            onClick={() => handleStartEdit(m)}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-lg transition-colors cursor-pointer"
+                            title="編輯此會員報名資料"
+                          >
+                            <Pencil className="w-3 h-3" />
+                            <span>編輯</span>
+                          </button>
+
+                          {/* Delete button */}
+                          <button
+                            onClick={() => setDeletingMember(m)}
+                            className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 rounded-lg transition-colors cursor-pointer"
+                            title="刪除此筆資料"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                            <span>刪除</span>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -349,6 +476,256 @@ export default function MemberDataViewerModal({
         </div>
 
       </div>
+
+      {/* Edit Member Modal */}
+      {editingMember && (
+        <div className="fixed inset-0 z-60 overflow-y-auto bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-2xl w-full border border-sky-300 shadow-2xl p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto">
+            
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-sky-100 text-sky-800 flex items-center justify-center">
+                  <Pencil className="w-4 h-4" />
+                </div>
+                <div>
+                  <h4 className="text-lg font-bold text-slate-900">
+                    編輯會員報名資料
+                  </h4>
+                  <div className="text-xs text-slate-500 font-mono">
+                    會員編號：{editingMember.id} · 登記時間：{editingMember.appliedAt}
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setEditingMember(null)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEdit} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    申請人姓名 <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.applicantName || ''}
+                    onChange={(e) => setEditFormData({ ...editFormData, applicantName: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-sky-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    稱謂
+                  </label>
+                  <select
+                    value={editFormData.gender || '先生'}
+                    onChange={(e) => setEditFormData({ ...editFormData, gender: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-sky-500 bg-white"
+                  >
+                    <option value="先生">先生</option>
+                    <option value="女士">女士</option>
+                    <option value="免填">免填</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    家庭理財暱稱 / 堂號 <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.familyName || ''}
+                    onChange={(e) => setEditFormData({ ...editFormData, familyName: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-sky-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    出生日期
+                  </label>
+                  <input
+                    type="date"
+                    value={editFormData.birthday || ''}
+                    onChange={(e) => setEditFormData({ ...editFormData, birthday: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-sky-500 bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    香港聯絡電話 (WhatsApp) <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={editFormData.phone || ''}
+                    onChange={(e) => setEditFormData({ ...editFormData, phone: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-sky-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    電子信箱
+                  </label>
+                  <input
+                    type="email"
+                    value={editFormData.email || ''}
+                    onChange={(e) => setEditFormData({ ...editFormData, email: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-sky-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    居住地區（香港）
+                  </label>
+                  <select
+                    value={editFormData.city || '香港島'}
+                    onChange={(e) => {
+                      const newCity = e.target.value;
+                      const newDistricts = hkRegions[newCity] || [];
+                      setEditFormData({
+                        ...editFormData,
+                        city: newCity,
+                        district: newDistricts[0] || ''
+                      });
+                    }}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-sky-500 bg-white"
+                  >
+                    {Object.keys(hkRegions).map(r => (
+                      <option key={r} value={r}>{r}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    行政分區
+                  </label>
+                  <select
+                    value={editFormData.district || ''}
+                    onChange={(e) => setEditFormData({ ...editFormData, district: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-sky-500 bg-white"
+                  >
+                    {(hkRegions[editFormData.city || '香港島'] || []).map(d => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    會員方案
+                  </label>
+                  <select
+                    value={editFormData.tier || 'family'}
+                    onChange={(e) => setEditFormData({ ...editFormData, tier: e.target.value as MembershipTier })}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-sky-500 bg-white"
+                  >
+                    <option value="family">幸福家庭 · 認證會員</option>
+                    <option value="free">陽光之友 · 普惠會員</option>
+                    <option value="legacy">世代傳承 · 守護會員</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">
+                    服務接收方式
+                  </label>
+                  <select
+                    value={editFormData.contactPreference || 'WhatsApp 專屬社群與訊息通知'}
+                    onChange={(e) => setEditFormData({ ...editFormData, contactPreference: e.target.value })}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-sky-500 bg-white"
+                  >
+                    <option value="WhatsApp 專屬社群與訊息通知">WhatsApp 專屬社群與訊息通知</option>
+                    <option value="電子信箱 Email 深度研報">電子信箱 Email 深度研報</option>
+                    <option value="電話或短信 SMS 專人聯繫">電話或短信 SMS 專人聯繫</option>
+                    <option value="紙本教材與歡迎禮盒郵寄">紙本教材與歡迎禮盒郵寄</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  入會期待與留言
+                </label>
+                <textarea
+                  rows={3}
+                  value={editFormData.statement || ''}
+                  onChange={(e) => setEditFormData({ ...editFormData, statement: e.target.value })}
+                  className="w-full p-3 rounded-xl border border-slate-300 text-sm focus:outline-none focus:border-sky-500"
+                />
+              </div>
+
+              {editError && (
+                <p className="text-xs text-rose-500 font-semibold">{editError}</p>
+              )}
+
+              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setEditingMember(null)}
+                  className="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+                >
+                  取消
+                </button>
+                <button
+                  type="submit"
+                  className="inline-flex items-center gap-1.5 px-5 py-2.5 text-xs font-bold text-white bg-sky-600 hover:bg-sky-700 rounded-xl shadow-xs transition-colors cursor-pointer"
+                >
+                  <Save className="w-3.5 h-3.5" />
+                  <span>儲存更新</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingMember && (
+        <div className="fixed inset-0 z-60 overflow-y-auto bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-3xl max-w-md w-full border border-rose-300 shadow-2xl p-6 sm:p-7 space-y-5 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
+              <AlertTriangle className="w-7 h-7" />
+            </div>
+
+            <div className="space-y-1.5">
+              <h4 className="text-lg font-bold text-slate-900">
+                確定要刪除這筆會員報名資料嗎？
+              </h4>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                即將從後台與星光榜中刪除 <span className="font-bold text-slate-800">{deletingMember.applicantName}</span> 的「<span className="font-bold text-amber-800">{deletingMember.familyName}</span>」（編號：{deletingMember.id}）。此操作無法復原。
+              </p>
+            </div>
+
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeletingMember(null)}
+                className="px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 rounded-xl transition-colors cursor-pointer"
+              >
+                取消
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmDelete}
+                className="px-5 py-2.5 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 rounded-xl shadow-xs transition-colors cursor-pointer"
+              >
+                確認刪除
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }

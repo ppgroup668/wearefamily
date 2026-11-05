@@ -1,6 +1,6 @@
 {
-  "name": "我們叫這一家",
-  "description": "「我們叫這一家」溫馨陽光家庭社群平台，提供家庭烘焙、藝術手作、戶外野餐活動線上報名、家庭故事分享與溫暖互助服務。",
+  "name": "理財這一家",
+  "description": "「理財這一家」香港陽光家庭理財社群平台，會員手續費全免 (HK$ 0)，提供家庭理財規劃、親子財商教育與專屬 WhatsApp 會員資訊。",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

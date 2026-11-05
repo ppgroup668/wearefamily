@@ -38,7 +38,7 @@ export default function Hero({ onScrollToForm, onScrollToBenefits }: HeroProps) 
 
             {/* Subtitle / Paragraph */}
             <p className="text-base sm:text-lg text-slate-700 leading-relaxed max-w-2xl">
-              告別個人面對金錢的孤單與焦慮！「理財這一家」是專為台灣家庭設立的非營利理財聚落。
+              告別個人面對金錢的孤單與焦慮！「理財這一家」是專為香港家庭設立的陽光理財社群聚落。
               只需在線上填寫入會表格，即可立即領取專屬數位會員卡，開通「631 記帳自動化試算表」、預約 1 對 1 客觀財務健檢，並免費獲得實體向日葵歡迎禮盒！
             </p>
 
@@ -128,7 +128,7 @@ export default function Hero({ onScrollToForm, onScrollToBenefits }: HeroProps) 
               <span className="text-xs font-bold tracking-wider text-slate-500">已入會家庭</span>
             </div>
             <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tabular-nums">1,420+ 戶</div>
-            <div className="text-xs text-slate-600 mt-1">全台小資、育兒與跨代會員</div>
+            <div className="text-xs text-slate-600 mt-1">香港小資、育兒與跨代會員</div>
           </div>
 
           <div className="bg-white/80 backdrop-blur-xs rounded-xl p-4 border border-emerald-100 hover:border-emerald-300 transition-colors shadow-xs">
@@ -136,7 +136,7 @@ export default function Hero({ onScrollToForm, onScrollToBenefits }: HeroProps) 
               <Gift className="w-5 h-5" />
               <span className="text-xs font-bold tracking-wider text-slate-500">入會手續費</span>
             </div>
-            <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tabular-nums">NT$ 0</div>
+            <div className="text-xl sm:text-2xl font-extrabold text-emerald-700 tracking-tight">費用全免 (HK$ 0)</div>
             <div className="text-xs text-slate-600 mt-1">公益推廣專案，永久免年費</div>
           </div>
 
