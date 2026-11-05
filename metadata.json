@@ -1,0 +1,6 @@
+{
+  "name": "我們叫這一家",
+  "description": "「我們叫這一家」溫馨陽光家庭社群平台，提供家庭烘焙、藝術手作、戶外野餐活動線上報名、家庭故事分享與溫暖互助服務。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
