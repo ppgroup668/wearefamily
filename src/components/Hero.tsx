@@ -92,7 +92,7 @@ export default function Hero({ onScrollToForm, onScrollToBenefits }: HeroProps) 
               
               <div className="relative rounded-2xl overflow-hidden bg-white border border-amber-200/80 shadow-xl">
                 <img
-                  src="/src/assets/images/hero_family_finance_1793850891754.jpg"
+                  src="/assets/aistudio/image_dc125b3b.png"
                   alt="理財這一家 - 陽光家庭理財入會幸福日常"
                   referrerPolicy="no-referrer"
                   className="w-full h-[360px] sm:h-[420px] object-cover hover:scale-103 transition-transform duration-700 ease-out"

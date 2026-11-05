@@ -304,6 +304,26 @@ export default function MembershipFormSection({ onApplicationSubmitted }: Member
           
           {/* Main Membership Form */}
           <div className="lg:col-span-7 bg-white rounded-3xl border border-amber-200/90 shadow-lg p-6 sm:p-10 space-y-8">
+            
+            {/* Sunny Family Photo Banner */}
+            <div className="relative rounded-2xl overflow-hidden border border-amber-200/80 shadow-xs h-48 sm:h-56 group">
+              <img
+                src="/assets/aistudio/image_dc125b3b.png"
+                alt="理財這一家 - 全家一同儲蓄與規劃目標"
+                className="w-full h-full object-cover group-hover:scale-103 transition-transform duration-500 ease-out"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent flex items-end p-5 sm:p-6">
+                <div className="text-white space-y-1">
+                  <span className="text-[11px] font-bold text-amber-300 uppercase tracking-wider">
+                    ✨ SUNSHINE WEALTH FAMILY
+                  </span>
+                  <div className="text-base sm:text-lg font-extrabold tracking-tight">
+                    陪伴孩子從小學會儲蓄與夢想 · 理財這一家正式入會
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <form onSubmit={handleSubmit} className="space-y-6">
               
               {/* Part 1: Applicant Profile */}
